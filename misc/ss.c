@@ -26,6 +26,7 @@
 #include <dirent.h>
 #include <fnmatch.h>
 #include <getopt.h>
+#include <sys/time.h>
 
 #include "utils.h"
 #include "rt_names.h"
@@ -2507,10 +2508,13 @@ int main(int argc, char *argv[])
 	const char *dump_tcpdiag = NULL;
 	FILE *filter_fp = NULL;
 	int ch;
+	struct timeval start_tv, end_tv;
 
 	memset(&current_filter, 0, sizeof(current_filter));
 
 	current_filter.states = default_filter.states;
+
+	gettimeofday(&start_tv, NULL);
 
 	while ((ch = getopt_long(argc, argv, "dhaletuwxnro460spf:miA:D:F:vV",
 				 long_opts, NULL)) != EOF) {
@@ -2852,5 +2856,11 @@ int main(int argc, char *argv[])
 		tcp_show(&current_filter, TCPDIAG_GETSOCK);
 	if (current_filter.dbs & (1<<DCCP_DB))
 		tcp_show(&current_filter, DCCPDIAG_GETSOCK);
+
+	gettimeofday(&end_tv, NULL);
+	printf("daveti: query time [%lu] usec\n",
+		((end_tv.tv_sec-start_tv.tv_sec)*1000000+
+		(end_tv.tv_usec-start_tv.tv_usec)));
+
 	return 0;
 }
